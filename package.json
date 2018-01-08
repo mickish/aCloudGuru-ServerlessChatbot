@@ -1,0 +1,8 @@
+{
+	"name": "aCloudGuru-ServerlessChatbot",
+	"version": "1.0.0",
+	"dependencies": {
+		"node-fetch": "^1.7.3",
+		"serverless": "^1.6.1"
+	}
+}
