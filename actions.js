@@ -1,3 +1,6 @@
+/* eslint-disable no-console */
+const fetch = require('node-fetch');
+
 const log = (event) => {
   console.log('Event', JSON.stringify(event, null, 2));
   return Promise.resolve(event);
@@ -18,15 +21,33 @@ const parseConvertCommand = (command) => {
   return null;
 };
 
+// Make an API call to http://fixer.io/
+const callFixer = (command) => {
+  const url = `https://api.fixer.io/latest?base=${command.source}&symbols=${command.target}`;
+  console.log(`Requesting ${url}`);
+  return fetch(url)
+    .then(response => response.json())
+    .then((json) => {
+      if (json.error === 'Invalid base') {
+        return `No rates found for currency "${command.source}"`;
+      }
+      if (!json.rates[command.target]) {
+        return `No rates found for currency "${command.target}"`;
+      }
+      const result = json.rates[command.target] * command.amount;
+      const displayResult = parseFloat(Math.round(result * 100) / 100).toFixed(2);
+      return `${command.amount}${command.source} is ${displayResult}${command.target}`;
+    });
+};
+
 // Generate a response to the command.
 const doCommand = (event) => {
   const rawCommand = event.slack.event.text;
   const command = getCommand(rawCommand);
   const convertCommand = parseConvertCommand(command);
   if (convertCommand) {
-    return convertCommand;
-    // return callFixer(convertCommand)
-    //   .then(reply => Object.assign(event, { reply }));
+    return callFixer(convertCommand)
+      .then(reply => Object.assign(event, { reply }));
   }
   const defaultReply = `I'm sorry, I don't understand the command "${command}"
 Please use a format like "convert 1AUD to USD"`;
