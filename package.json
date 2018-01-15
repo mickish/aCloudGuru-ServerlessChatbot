@@ -1,8 +1,17 @@
 {
-	"name": "aCloudGuru-ServerlessChatbot",
-	"version": "1.0.0",
-	"dependencies": {
-		"node-fetch": "^1.7.3",
-		"serverless": "^1.6.1"
-	}
+  "name": "aCloudGuru-ServerlessChatbot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "install.js",
+  "dependencies": {
+	"node-fetch": "^1.7.3",
+	"serverless": "^1.6.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
 }

@@ -19,53 +19,47 @@ const respond = callback => (event) => {
 
 // Verify the token matches ours.
 const verifyToken = (event) => {
-	if (event.slack.token !== process.env.VERIFICATION_TOKEN) {
-		throw new Error('InvalidToken');
-	}
-	return event;
-}
+  if (event.slack.token !== process.env.VERIFICATION_TOKEN) {
+    throw new Error('InvalidToken');
+  }
+  return event;
+};
 
 // Get the team details form DDB.
 const getTeam = (event) => {
-	const params = {
-		TableName: process.env.TEAMS_TABLE,
-		Key: {
-			team_id: event.slack.team_id
-		}
-	};
-	console.log('dynamodb.get', params);
-	return dynamodb.get(params).promise()
-		.then(data => Object.assign(event, { team: data.Item }));
+  const params = {
+    TableName: process.env.TEAMS_TABLE,
+    Key: {
+      team_id: event.slack.team_id,
+    }
+  };
+  console.log('dynamodb.get', params);
+  return dynamodb.get(params).promise()
+    .then(data => Object.assign(event, { team: data.Item }));
 };
 
 // Check for mention.
 const checkForMention = (event) => { // eslint-disable-line consistent-return
-	console.log(`checkForMention`);
-	const message = event.slack.event.text;
-	console.log(`  message: ${message}`);
-	const botUserId = event.team.bot.bot_user_id;
-	console.log(`  botUserId: ${botUserId}`);
-	const pattern = `^<@${botUserId}>.*$`;
-	console.log(`  pattern: ${pattern}`);
-	const botUserIsMentioned = new RegExp(pattern);
-	console.log(`Looking for ${pattern} in "${message}"`);
-	if (botUserIsMentioned.test(message)) {
-		console.log(`Bot ${botUserId} is mentioned in "${message}"`);
-		return event;
-	}
-}
+  const message = event.slack.event.text;
+  const botUserId = event.team.bot.bot_user_id;
+  const botUserIsMentioned = new RegExp(`^<@${botUserId}>.*$`);
+  if (botUserIsMentioned.test(message)) {
+    console.log(`Bot ${botUserId} is mentioned in "${message}"`);
+    return event;
+  }
+};
 
 // Invoke action endpoint, if valid request.
 const actionFunctionName = `${process.env.NAMESPACE}-actions`;
 const invokeAction = (event) => {
-	if (!event) return null;
-	console.log(`Invoking ${actionFunctionName} with event`, event);
-	return lambda.invoke({
-		FunctionName: actionFunctionName,
-		InvocationType: 'Event',
-		LogType: 'None',
-		Payload: JSON.stringify(event),
-	}).promise();
+  if (!event) return null;
+  console.log(`Invoking ${actionFunctionName} with event`, event);
+  return lambda.invoke({
+    FunctionName: actionFunctionName,
+    InvocationType: 'Event',
+    LogType: 'None',
+    Payload: JSON.stringify(event),
+  }).promise();
 };
 
 module.exports.handler = (event, context, callback) =>
